@@ -47,7 +47,7 @@ trait HalmJsonView extends HttpView {
      */
     Object hal(String href = null, String queryParams = null, Map values = null, @DelegatesTo(Halm) final Closure closure) {
         String servletPath = request.uri - request.contextPath
-        PREFIX prefix = PREFIX.values().find { PREFIX prefix -> servletPath.startsWith("$prefix.prefix/") }
+        PREFIX prefix = PREFIX.values().find { PREFIX prefix -> servletPath == prefix.prefix || servletPath.startsWith("$prefix.prefix/") }
 
         // +------------------------------------------------------------+
         // | there are 2 unofficial ways to get request URL. Choose one |

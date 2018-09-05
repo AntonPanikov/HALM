@@ -494,7 +494,7 @@ class Halm {
                 map.put('type', _type ?: type)
             }
             if (_templated) {
-                map.put('template', true)
+                map.put('templated', true)
             }
             if (_title) {
                 map.put('title', _title)

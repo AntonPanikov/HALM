@@ -18,10 +18,16 @@ class Halm {
     private static final Pattern CURIE_LINK_PATTERN   = Pattern.compile('.+:.+')
     private static final Pattern PARAM_PATTERN        = Pattern.compile('\\{?[?&].*')
 
+    private static final String JSON_ONLY_KEY = 'FOR JSON ONLY'
+    private static final String HAL_ONLY_KEY = 'FOR HAL ONLY'
+
     private String   baseURI
     private String   type
     private String   defaultCurieName = null
     private Embedded parent           = null
+
+    private Set<String> halOnly
+    private Set<String> jsonOnly
 
     private Map<String, ?> linkMap     = [:]
     private Map<String, ?> curieMap    = [:]
@@ -35,8 +41,10 @@ class Halm {
      * @param href -- relative path part of the URL
      * @param params -- query part of the URL
      */
-    Halm(String path, String href = null, String params = '') {
+    Halm(String path, String href = null, String params = '', Set<String> jsonOnly = [], Set<String> halOnly = []) {
         baseURI = path
+        this.jsonOnly = jsonOnly
+        this.halOnly = halOnly
         linkMap.put('curie', curieMap)
         link('self', href, params)
     }
@@ -48,8 +56,8 @@ class Halm {
      * @param href
      * @param params
      */
-    Halm(StringBuffer path, String href = null, String params = '') {
-        this(path.toString(), href, params)
+    Halm(StringBuffer path, String href = null, String params = '', Set<String> jsonOnly = [], Set<String> halOnly = []) {
+        this(path.toString(), href, params, jsonOnly, halOnly)
     }
 
     /**
@@ -172,7 +180,18 @@ class Halm {
         }
 
         if (valueMap) {
-            map.putAll(valueMap.collectEntries {
+            map.findAll {
+                switch (format) {
+                    case FORMAT.JSON:
+                        !jsonOnly.contains(it.key)
+                        break
+                    case FORMAT.HAL:
+                        !halOnly.contains(it.key)
+                        break
+                    default:
+                        true
+                }
+            }.putAll(valueMap.collectEntries {
                 [(it.key): it.value]
             })
         }
@@ -238,7 +257,7 @@ class Halm {
      */
     static Halm hal(String baseUrl, String href, String params, Map<Object, Object> values = null,
                     @DelegatesTo(Halm) Closure closure) {
-        Halm hal = new Halm(baseUrl, href, params)
+        Halm hal = new Halm(baseUrl, href, params, values[JSON_ONLY_KEY], values[HAL_ONLY_KEY])
         hal.valueMap << (values ?: [:])
 
         closure.delegate = hal

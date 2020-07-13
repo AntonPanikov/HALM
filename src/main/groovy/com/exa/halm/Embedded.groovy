@@ -63,7 +63,7 @@ class Embedded {
     }
 
     def body(Map<?, ?> values = null, @DelegatesTo(Halm) Closure closure) {
-        _hal = new Halm(_curie ? getCurieHref() : _baseURL, _href)
+        _hal = new Halm(_curie ? getCurieHref() : _baseURL, _href, '', _parent.jsonOnly, _parent.halOnly)
         _hal.parent = this
         _hal.valueMap << (values ?: [:])
         closure.delegate = _hal
@@ -82,7 +82,7 @@ class Embedded {
     }
 
     def body(Map<?, ?> values) {
-        _hal = new Halm(_curie ? getCurieHref() : _baseURL, _href)
+        _hal = new Halm(_curie ? getCurieHref() : _baseURL, _href, '', _parent.jsonOnly, _parent.halOnly)
         _hal.parent = this
         _hal.valueMap << (values ?: [:])
         if (_curie) {

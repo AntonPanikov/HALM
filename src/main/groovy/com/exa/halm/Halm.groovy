@@ -14,12 +14,12 @@ import java.util.regex.Pattern
  */
 @CompileDynamic
 class Halm {
+    public static final String JSON_ONLY_KEY = 'FOR JSON ONLY'
+    public static final String HAL_ONLY_KEY  = 'FOR HAL ONLY'
+
     private static final Pattern RELATIVE_URL_PATTERN = Pattern.compile('\\{?/.*')
     private static final Pattern CURIE_LINK_PATTERN   = Pattern.compile('.+:.+')
     private static final Pattern PARAM_PATTERN        = Pattern.compile('\\{?[?&].*')
-
-    private static final String JSON_ONLY_KEY = 'FOR JSON ONLY'
-    private static final String HAL_ONLY_KEY = 'FOR HAL ONLY'
 
     private String   baseURI
     private String   type
@@ -58,6 +58,14 @@ class Halm {
      */
     Halm(StringBuffer path, String href = null, String params = '', Set<String> jsonOnly = [], Set<String> halOnly = []) {
         this(path.toString(), href, params, jsonOnly, halOnly)
+    }
+
+    Set<String> getJsonOnly() {
+        return jsonOnly
+    }
+
+    Set<String> getHalOnly() {
+        return halOnly
     }
 
     /**
@@ -180,7 +188,7 @@ class Halm {
         }
 
         if (valueMap) {
-            map.findAll {
+            map.putAll(valueMap.findAll {
                 switch (format) {
                     case FORMAT.JSON:
                         !jsonOnly.contains(it.key)
@@ -191,7 +199,7 @@ class Halm {
                     default:
                         true
                 }
-            }.putAll(valueMap.collectEntries {
+            }.collectEntries {
                 [(it.key): it.value]
             })
         }
@@ -257,7 +265,7 @@ class Halm {
      */
     static Halm hal(String baseUrl, String href, String params, Map<Object, Object> values = null,
                     @DelegatesTo(Halm) Closure closure) {
-        Halm hal = new Halm(baseUrl, href, params, values[JSON_ONLY_KEY], values[HAL_ONLY_KEY])
+        Halm hal = values ? new Halm(baseUrl, href, params, values[JSON_ONLY_KEY] as Set, values[HAL_ONLY_KEY] as Set) : new Halm(baseUrl, href, params)
         hal.valueMap << (values ?: [:])
 
         closure.delegate = hal

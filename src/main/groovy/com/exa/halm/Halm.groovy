@@ -15,9 +15,6 @@ import java.util.regex.Pattern
  */
 @CompileDynamic
 class Halm {
-    public static final String JSON_EXCLUDE_KEY = 'EXCLUDE FROM JSON'
-    public static final String HAL_EXCLUDE_KEY  = 'EXCLUDE FROM HAL'
-
     private static final Pattern RELATIVE_URL_PATTERN = Pattern.compile('\\{?/.*')
     private static final Pattern CURIE_LINK_PATTERN   = Pattern.compile('.+:.+')
     private static final Pattern PARAM_PATTERN        = Pattern.compile('\\{?[?&].*')
@@ -198,7 +195,7 @@ class Halm {
 
             map.putAll(
                     valueMap.findAll {
-                        !([JSON_EXCLUDE_KEY, HAL_EXCLUDE_KEY].contains(it.key) || filter.contains(it.key))
+                        !filter.contains(it.key)
                     }.collectEntries {
                         [(it.key): it.value]
                     }

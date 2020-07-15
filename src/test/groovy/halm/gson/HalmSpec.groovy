@@ -27,6 +27,8 @@ class HalmSpec extends Specification {
                         ]
                 ]
         ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [:]
     }
 
     void "simple HAL with relative path"() {
@@ -42,6 +44,8 @@ class HalmSpec extends Specification {
                         ]
                 ]
         ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [:]
     }
 
     void "top level HAL map"() {
@@ -65,6 +69,13 @@ class HalmSpec extends Specification {
                 int   : 42,
                 arr   : [1, 2, 3, 5, 7],
                 map   : [key1: 'val 1', key2: []]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                str: 'String value',
+                int: 42,
+                arr: [1, 2, 3, 5, 7],
+                map: [key1: 'val 1', key2: []]
         ]
     }
 
@@ -92,6 +103,13 @@ class HalmSpec extends Specification {
                 int   : 42,
                 arr   : [1, 2, 3, 5, 7],
                 map   : [key1: 'val 1', key2: []]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                str: 'String value',
+                int: 42,
+                arr: [1, 2, 3, 5, 7],
+                map: [key1: 'val 1', key2: []]
         ]
     }
 
@@ -167,6 +185,8 @@ class HalmSpec extends Specification {
         }
 
         hal?.asMap() == expect
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [:]
     }
 
     void "top level HAL templates"() {
@@ -247,6 +267,8 @@ class HalmSpec extends Specification {
         }
 
         hal?.asMap() == expect
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [:]
     }
 
     void "top level simple embedded"() {
@@ -306,6 +328,10 @@ class HalmSpec extends Specification {
         }
 
         hal?.asMap() == expect
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                'inline rel': [:],
+                'emb rel'   : [:]]
     }
 
     void "top level links in embedded"() {
@@ -395,6 +421,8 @@ class HalmSpec extends Specification {
         }
 
         hal?.asMap() == expect
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [emb: [:]]
     }
 
     void "top level templates in embedded"() {
@@ -490,6 +518,8 @@ class HalmSpec extends Specification {
         }
 
         hal?.asMap() == expect
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [emb: [:]]
     }
 
     void "top level embedded map"() {
@@ -529,6 +559,15 @@ class HalmSpec extends Specification {
                         ]
                 ]
         ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                emb: [
+                        str: 'String value',
+                        int: 42,
+                        arr: [1, 2, 3, 5, 7],
+                        map: [key1: 'val 1', key2: []]
+                ]
+        ]
     }
 
     void "top level embedded values"() {
@@ -566,6 +605,180 @@ class HalmSpec extends Specification {
                                 arr   : [1, 2, 3, 5, 7],
                                 map   : [key1: 'val 1', key2: []]
                         ]
+                ]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                emb: [
+                        str: 'String value',
+                        int: 42,
+                        arr: [1, 2, 3, 5, 7],
+                        map: [key1: 'val 1', key2: []]
+                ]
+        ]
+    }
+
+    void "exclude fields from top JSON"() {
+        when:
+        Halm hal = Halm.hal("base", 'path', 'params', [
+                (Halm.FORMAT.JSON): ['int', 'map', 'missing']
+        ]) {
+            str 'String value'
+            "int" 42
+            arr([1, 2, 3, 5, 7])
+            map([
+                    key1: 'val 1',
+                    key2: []
+            ])
+        }
+
+        then:
+        hal?.asMap(Halm.FORMAT.HAL.suffix) == [
+                _links: [
+                        self: [
+                                href: 'path?params',
+                                type: 'application/hal+json'
+                        ]
+                ],
+                str   : 'String value',
+                arr   : [1, 2, 3, 5, 7]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                str: 'String value',
+                int   : 42,
+                arr: [1, 2, 3, 5, 7],
+                map   : [key1: 'val 1', key2: []]
+        ]
+    }
+
+    void "exclude fields from top HAL"() {
+        when:
+        Halm hal = Halm.hal("base", 'path', 'params', [
+                (Halm.FORMAT.HAL): ['int', 'map', 'missing']
+        ]) {
+            str 'String value'
+            "int" 42
+            arr([1, 2, 3, 5, 7])
+            map([
+                    key1: 'val 1',
+                    key2: []
+            ])
+        }
+
+        then:
+        hal?.asMap(Halm.FORMAT.HAL.suffix) == [
+                _links: [
+                        self: [
+                                href: 'path?params',
+                                type: 'application/hal+json'
+                        ]
+                ],
+                str   : 'String value',
+                int: 42,
+                arr   : [1, 2, 3, 5, 7],
+                map: [key1: 'val 1', key2: []]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                str: 'String value',
+                arr: [1, 2, 3, 5, 7]
+        ]
+    }
+
+
+    void "exclude fields from embedded JSON"() {
+        when:
+        Halm hal = Halm.hal("base", 'path', 'params', [
+                (Halm.FORMAT.JSON): ['int', 'map', 'missing']
+        ]) {
+            embedded 'emb', {
+                href 'emb/uri'
+                body([
+                        str: 'String value',
+                        int: 42,
+                        arr: [1, 2, 3, 5, 7],
+                        map: [key1: 'val 1', key2: []]
+                ])
+            }
+        }
+
+        then:
+        hal?.asMap(Halm.FORMAT.HAL.suffix) == [
+                _links   : [
+                        self: [
+                                href: 'path?params',
+                                type: 'application/hal+json'
+                        ]
+                ],
+                _embedded: [
+                        emb: [
+                                _links: [
+                                        self: [
+                                                href: 'emb/uri',
+                                                type: 'application/hal+json'
+                                        ]
+                                ],
+                                str   : 'String value',
+                                arr   : [1, 2, 3, 5, 7]
+                        ]
+                ]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                emb: [
+                        str: 'String value',
+                        int   : 42,
+                        arr: [1, 2, 3, 5, 7],
+                        map   : [key1: 'val 1', key2: []]
+                ]
+        ]
+    }
+
+    void "exclude fields from embedded HAL"() {
+        when:
+        Halm hal = Halm.hal("base", 'path', 'params', [
+                (Halm.FORMAT.HAL): ['int', 'map', 'missing']
+        ]) {
+            embedded 'emb', {
+                href 'emb/uri'
+                body([
+                        str: 'String value',
+                        int: 42,
+                        arr: [1, 2, 3, 5, 7],
+                        map: [key1: 'val 1', key2: []]
+                ])
+            }
+        }
+
+        then:
+        hal?.asMap(Halm.FORMAT.HAL.suffix) == [
+                _links   : [
+                        self: [
+                                href: 'path?params',
+                                type: 'application/hal+json'
+                        ]
+                ],
+                _embedded: [
+                        emb: [
+                                _links: [
+                                        self: [
+                                                href: 'emb/uri',
+                                                type: 'application/hal+json'
+                                        ]
+                                ],
+                                str   : 'String value',
+                                int: 42,
+                                arr   : [1, 2, 3, 5, 7],
+                                map: [key1: 'val 1', key2: []]
+                        ]
+                ]
+        ]
+
+        hal?.asMap(Halm.FORMAT.JSON.suffix) == [
+                emb: [
+                        str: 'String value',
+                        arr: [1, 2, 3, 5, 7]
                 ]
         ]
     }

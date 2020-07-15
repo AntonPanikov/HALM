@@ -66,7 +66,7 @@ trait HalmJsonView extends HttpView {
         def hrefRoot = href ?: (servletPath - offset - (href == null ? '' : '/'))
 
         Halm hal = Halm.hal(baseURL, hrefRoot, queryParams ?: '', values, closure)
-        String format = params.get('format') ? params.get('format') : request.getHeader('Accept')
+        String format = params.get('format') ?: request.getHeader('Accept')
 
         if (Environment.current == Environment.DEVELOPMENT && params.debug) {
             hal.value([

@@ -1,5 +1,6 @@
 package com.exa.halm
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import groovy.transform.CompileDynamic
 
 import java.util.regex.Pattern
@@ -14,8 +15,8 @@ import java.util.regex.Pattern
  */
 @CompileDynamic
 class Halm {
-    public static final String JSON_ONLY_KEY = 'FOR JSON ONLY'
-    public static final String HAL_ONLY_KEY  = 'FOR HAL ONLY'
+    public static final String JSON_EXCLUDE_KEY = 'EXCLUDE FROM JSON'
+    public static final String HAL_EXCLUDE_KEY  = 'EXCLUDE FROM HAL'
 
     private static final Pattern RELATIVE_URL_PATTERN = Pattern.compile('\\{?/.*')
     private static final Pattern CURIE_LINK_PATTERN   = Pattern.compile('.+:.+')
@@ -24,10 +25,9 @@ class Halm {
     private String   baseURI
     private String   type
     private String   defaultCurieName = null
-    private Embedded parent           = null
+    private Embedded parent
 
-    private Set<String> halOnly
-    private Set<String> jsonOnly
+    private Map<FORMAT, Set<String>> fieldFilter = [:]
 
     private Map<String, ?> linkMap     = [:]
     private Map<String, ?> curieMap    = [:]
@@ -41,10 +41,9 @@ class Halm {
      * @param href -- relative path part of the URL
      * @param params -- query part of the URL
      */
-    Halm(String path, String href = null, String params = '', Set<String> jsonOnly = [], Set<String> halOnly = []) {
+    Halm(String path, String href = null, String params = '', Map<FORMAT, Set<String>> fieldFilter = [:]) {
         baseURI = path
-        this.jsonOnly = jsonOnly
-        this.halOnly = halOnly
+        this.fieldFilter = fieldFilter
         linkMap.put('curie', curieMap)
         link('self', href, params)
     }
@@ -56,16 +55,12 @@ class Halm {
      * @param href
      * @param params
      */
-    Halm(StringBuffer path, String href = null, String params = '', Set<String> jsonOnly = [], Set<String> halOnly = []) {
-        this(path.toString(), href, params, jsonOnly, halOnly)
+    Halm(StringBuffer path, String href = null, String params = '', Map<FORMAT, Set<String>> fieldFilter = [:]) {
+        this(path.toString(), href, params, fieldFilter)
     }
 
-    Set<String> getJsonOnly() {
-        return jsonOnly
-    }
-
-    Set<String> getHalOnly() {
-        return halOnly
+    protected Map<FORMAT, Set<String>> getFieldFilter() {
+        return fieldFilter
     }
 
     /**
@@ -142,11 +137,11 @@ class Halm {
      * @return the Map representing information from this instance
      */
     Map asMap(String formatString = FORMAT.HAL.suffix) {
-        String format = findFormat(formatString)
-        type = format
+        FORMAT format = FORMAT.values().find { it.suffix == formatString }
+        type = findFormat(formatString)
 
         Map map = new LinkedHashMap()
-        if (format == FORMAT.HAL.header) {
+        if (format == FORMAT.HAL) {
             if (linkMap) {
                 map.put('_links', linkMap.findAll {
                     (it.key != 'curie' || curieMap?.size() > 0)
@@ -166,12 +161,12 @@ class Halm {
                     if (it.value instanceof Collection) {
                         [(it.key): it.value
                                 ? it.value.collect {
-                            Halm builder -> builder?.asMap(format)
+                            Halm builder -> builder?.asMap(formatString)
                         }
                                 : []
                         ]
                     } else {
-                        [(it.key): ((Halm) it.value)?.asMap(format)]
+                        [(it.key): ((Halm) it.value)?.asMap(formatString)]
                     }
                 })
             }
@@ -179,29 +174,29 @@ class Halm {
             embeddedMap.collect {
                 if (it.value instanceof Collection) {
                     map.put(it.key, it.value?.collect { Halm builder ->
-                        builder.asMap(format)
+                        builder.asMap(formatString)
                     })
                 } else {
-                    map.put(it.key, ((Halm) it.value)?.asMap(format))
+                    map.put(it.key, ((Halm) it.value)?.asMap(formatString))
                 }
             }
         }
 
         if (valueMap) {
-            map.putAll(valueMap.findAll {
-                switch (format) {
-                    case FORMAT.JSON:
-                        !jsonOnly.contains(it.key)
-                        break
-                    case FORMAT.HAL:
-                        !halOnly.contains(it.key)
-                        break
-                    default:
-                        true
-                }
-            }.collectEntries {
-                [(it.key): it.value]
-            })
+            Set<String> filter = fieldFilter.findAll { key, value ->
+                key != format && value
+            }.collect {
+                it.value
+            }.flatten() as Set<String>
+            filter -= fieldFilter?.with { it[format] } ?: []
+
+            map.putAll(
+                    valueMap.findAll {
+                        !([JSON_EXCLUDE_KEY, HAL_EXCLUDE_KEY].contains(it.key) || filter.contains(it.key))
+                    }.collectEntries {
+                        [(it.key): it.value]
+                    }
+            )
         }
         return map
     }
@@ -265,8 +260,12 @@ class Halm {
      */
     static Halm hal(String baseUrl, String href, String params, Map<Object, Object> values = null,
                     @DelegatesTo(Halm) Closure closure) {
-        Halm hal = values ? new Halm(baseUrl, href, params, values[JSON_ONLY_KEY] as Set, values[HAL_ONLY_KEY] as Set) : new Halm(baseUrl, href, params)
-        hal.valueMap << (values ?: [:])
+        Map<Boolean, Map<Object, Object>> valuesSplit = values?.groupBy { key, _ ->
+            FORMAT.values().contains(key)
+        } ?: [:]
+
+        Halm hal = new Halm(baseUrl, href, params, valuesSplit[Boolean.TRUE] as Map<FORMAT, Set<String>>)
+        hal.valueMap << (valuesSplit[Boolean.FALSE] ?: [:])
 
         closure.delegate = hal
         closure.resolveStrategy = Closure.DELEGATE_FIRST

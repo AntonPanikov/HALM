@@ -140,7 +140,7 @@ class Halm {
      * @return the Map representing information from this instance
      */
     Map asMap(String formatString = FORMAT.HAL.suffix) {
-        FORMAT format = FORMAT.values().find { it.suffix == formatString }
+        FORMAT format = FORMAT.values().find { it.suffix == formatString || it.header == formatString }
         type = findFormat(formatString)
 
         Map map = new LinkedHashMap()

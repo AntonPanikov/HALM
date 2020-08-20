@@ -208,7 +208,8 @@ class Halm {
      * Defines the mapping from the extension to the MIME type
      */
     static enum FORMAT {
-        HAL('halm', 'application/hal+json'),
+        HAL('hal', 'application/hal+json'),
+        HALM('halm', 'application/hal+json'), // for backward compatibility
         JSON('json', 'application/json'),
         IMAGE(null, 'image/*')
 

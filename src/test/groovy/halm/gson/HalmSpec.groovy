@@ -118,7 +118,10 @@ class HalmSpec extends Specification {
         Halm hal = Halm.hal("base", 'path', 'params', null) {
             link 'simpleRelative', 'simple/relative'
             link 'simpleAbsolute', '/simple/absolute'
-            link 'simpleComplete', 'simple/complete', 'param=simple', Locale.getInstance('ru', 'RU', ''), 'text/plane', 'simple title'
+            link('simpleComplete', 'simple/complete', 'param=simple'
+                    , Locale.getInstance('ru', 'RU', '')
+                    , 'text/plane', 'simple title', 'deprecated/url', '''link's name''', 'profile/uri'
+            )
             link {
                 rel 'closure'
                 href 'closure/uri'
@@ -127,12 +130,15 @@ class HalmSpec extends Specification {
                 href 'mixed/uri'
             }
             link {
-                rel 'comlete'
+                rel 'complete'
                 href 'complete/uri'
                 params 'param=complete'
                 hreflang Locale.JAPANESE
                 type 'image/*'
                 title 'complete title'
+                deprecation 'deprecated/url'
+                name '''link's name'''
+                profile 'profile/uri'
             }
         }
 
@@ -152,10 +158,13 @@ class HalmSpec extends Specification {
                                 type: 'application/hal+json'
                         ],
                         simpleComplete: [
-                                href    : 'simple/complete?param=simple',
-                                hreflang: 'ru_RU',
-                                type    : 'text/plane',
-                                title   : 'simple title'
+                                href       : 'simple/complete?param=simple',
+                                hreflang   : 'ru_RU',
+                                type       : 'text/plane',
+                                title      : 'simple title',
+                                deprecation: 'deprecated/url',
+                                name       : '''link's name''',
+                                profile    : 'profile/uri'
                         ],
                         closure       : [
                                 href: 'closure/uri',
@@ -165,11 +174,14 @@ class HalmSpec extends Specification {
                                 href: 'mixed/uri',
                                 type: 'application/hal+json'
                         ],
-                        comlete       : [
-                                href    : 'complete/uri?param=complete',
-                                hreflang: 'ja',
-                                type    : 'image/*',
-                                title   : 'complete title'
+                        complete      : [
+                                href       : 'complete/uri?param=complete',
+                                hreflang   : 'ja',
+                                type       : 'image/*',
+                                title      : 'complete title',
+                                deprecation: 'deprecated/url',
+                                name       : '''link's name''',
+                                profile    : 'profile/uri'
                         ]
                 ]
         ]
@@ -181,6 +193,9 @@ class HalmSpec extends Specification {
             assert result['_links'][rel]['templated'] == expect['_links'][rel]['templated']
             assert result['_links'][rel]['hreflang'] == expect['_links'][rel]['hreflang']
             assert result['_links'][rel]['title'] == expect['_links'][rel]['title']
+            assert result['_links'][rel]['deprecation'] == expect['_links'][rel]['deprecation']
+            assert result['_links'][rel]['name'] == expect['_links'][rel]['name']
+            assert result['_links'][rel]['profile'] == expect['_links'][rel]['profile']
             assert result['_links'][rel] == expect['_links'][rel]
         }
 
@@ -194,7 +209,10 @@ class HalmSpec extends Specification {
         Halm hal = Halm.hal("base", 'path', 'params', null) {
             template 'simpleRelative', 'simple/relative'
             template 'simpleAbsolute', '/simple/absolute'
-            template 'simpleComplete', 'simple/complete', 'param=simple', Locale.getInstance('ru', 'RU', ''), 'text/plane', 'simple title'
+            template('simpleComplete', 'simple/complete', 'param=simple'
+                    , Locale.getInstance('ru', 'RU', '')
+                    , 'text/plane', 'simple title', 'deprecated/url', '''link's name''', 'profile/uri'
+            )
             template {
                 rel 'closure'
                 href 'closure/uri'
@@ -203,12 +221,15 @@ class HalmSpec extends Specification {
                 href 'mixed/uri'
             }
             template {
-                rel 'comlete'
+                rel 'complete'
                 href 'complete/uri'
                 params 'param=complete'
                 hreflang Locale.JAPANESE
                 type 'image/*'
                 title 'complete title'
+                deprecation 'deprecated/url'
+                name '''link's name'''
+                profile 'profile/uri'
             }
         }
 
@@ -230,11 +251,14 @@ class HalmSpec extends Specification {
                                 templated: true
                         ],
                         simpleComplete: [
-                                href     : 'simple/complete?param=simple',
-                                hreflang : 'ru_RU',
-                                type     : 'text/plane',
-                                templated: true,
-                                title    : 'simple title'
+                                href       : 'simple/complete?param=simple',
+                                hreflang   : 'ru_RU',
+                                type       : 'text/plane',
+                                templated  : true,
+                                title      : 'simple title',
+                                deprecation: 'deprecated/url',
+                                name       : '''link's name''',
+                                profile    : 'profile/uri'
                         ],
                         closure       : [
                                 href     : 'closure/uri',
@@ -246,12 +270,15 @@ class HalmSpec extends Specification {
                                 type     : 'application/hal+json',
                                 templated: true
                         ],
-                        comlete       : [
-                                href     : 'complete/uri?param=complete',
-                                hreflang : 'ja',
-                                type     : 'image/*',
-                                templated: true,
-                                title    : 'complete title'
+                        complete      : [
+                                href       : 'complete/uri?param=complete',
+                                hreflang   : 'ja',
+                                type       : 'image/*',
+                                templated  : true,
+                                title      : 'complete title',
+                                deprecation: 'deprecated/url',
+                                name       : '''link's name''',
+                                profile    : 'profile/uri'
                         ]
                 ]
         ]
@@ -263,6 +290,9 @@ class HalmSpec extends Specification {
             assert result['_links'][rel]['templated'] == expect['_links'][rel]['templated']
             assert result['_links'][rel]['hreflang'] == expect['_links'][rel]['hreflang']
             assert result['_links'][rel]['title'] == expect['_links'][rel]['title']
+            assert result['_links'][rel]['deprecation'] == expect['_links'][rel]['deprecation']
+            assert result['_links'][rel]['name'] == expect['_links'][rel]['name']
+            assert result['_links'][rel]['profile'] == expect['_links'][rel]['profile']
             assert result['_links'][rel] == expect['_links'][rel]
         }
 
@@ -342,7 +372,10 @@ class HalmSpec extends Specification {
                 body {
                     link 'simpleRelative', 'simple/relative'
                     link 'simpleAbsolute', '/simple/absolute'
-                    link 'simpleComplete', 'simple/complete', 'param=simple', Locale.getInstance('ru', 'RU', ''), 'text/plane', 'simple title'
+                    link('simpleComplete', 'simple/complete', 'param=simple'
+                            , Locale.getInstance('ru', 'RU', '')
+                            , 'text/plane', 'simple title', 'deprecated/url', '''link's name''', 'profile/uri'
+                    )
                     link {
                         rel 'closure'
                         href 'closure/uri'
@@ -351,12 +384,15 @@ class HalmSpec extends Specification {
                         href 'mixed/uri'
                     }
                     link {
-                        rel 'comlete'
+                        rel 'complete'
                         href 'complete/uri'
                         params 'param=complete'
                         hreflang Locale.JAPANESE
                         type 'image/*'
                         title 'complete title'
+                        deprecation 'deprecated/url'
+                        name '''link's name'''
+                        profile 'profile/uri'
                     }
                 }
             }
@@ -386,10 +422,13 @@ class HalmSpec extends Specification {
                                                 type: 'application/hal+json'
                                         ],
                                         simpleComplete: [
-                                                href    : 'simple/complete?param=simple',
-                                                hreflang: 'ru_RU',
-                                                type    : 'text/plane',
-                                                title   : 'simple title'
+                                                href       : 'simple/complete?param=simple',
+                                                hreflang   : 'ru_RU',
+                                                type       : 'text/plane',
+                                                title      : 'simple title',
+                                                deprecation: 'deprecated/url',
+                                                name       : '''link's name''',
+                                                profile    : 'profile/uri'
                                         ],
                                         closure       : [
                                                 href: 'closure/uri',
@@ -399,11 +438,14 @@ class HalmSpec extends Specification {
                                                 href: 'mixed/uri',
                                                 type: 'application/hal+json'
                                         ],
-                                        comlete       : [
-                                                href    : 'complete/uri?param=complete',
-                                                hreflang: 'ja',
-                                                type    : 'image/*',
-                                                title   : 'complete title'
+                                        complete      : [
+                                                href       : 'complete/uri?param=complete',
+                                                hreflang   : 'ja',
+                                                type       : 'image/*',
+                                                title      : 'complete title',
+                                                deprecation: 'deprecated/url',
+                                                name       : '''link's name''',
+                                                profile    : 'profile/uri'
                                         ]
                                 ]
                         ]
@@ -417,6 +459,9 @@ class HalmSpec extends Specification {
             assert result['_embedded']['emb']['_links'][rel]['templated'] == expect['_embedded']['emb']['_links'][rel]['templated']
             assert result['_embedded']['emb']['_links'][rel]['hreflang'] == expect['_embedded']['emb']['_links'][rel]['hreflang']
             assert result['_embedded']['emb']['_links'][rel]['title'] == expect['_embedded']['emb']['_links'][rel]['title']
+            assert result['_embedded']['emb']['_links'][rel]['deprecation'] == expect['_embedded']['emb']['_links'][rel]['deprecation']
+            assert result['_embedded']['emb']['_links'][rel]['name'] == expect['_embedded']['emb']['_links'][rel]['name']
+            assert result['_embedded']['emb']['_links'][rel]['profile'] == expect['_embedded']['emb']['_links'][rel]['profile']
             assert result['_embedded']['emb']['_links'][rel] == expect['_embedded']['emb']['_links'][rel]
         }
 
@@ -433,7 +478,10 @@ class HalmSpec extends Specification {
                 body {
                     template 'simpleRelative', 'simple/relative'
                     template 'simpleAbsolute', '/simple/absolute'
-                    template 'simpleComplete', 'simple/complete', 'param=simple', Locale.getInstance('ru', 'RU', ''), 'text/plane', 'simple title'
+                    template('simpleComplete', 'simple/complete', 'param=simple'
+                            , Locale.getInstance('ru', 'RU', '')
+                            , 'text/plane', 'simple title', 'deprecated/url', '''link's name''', 'profile/uri'
+                    )
                     template {
                         rel 'closure'
                         href 'closure/uri'
@@ -442,12 +490,15 @@ class HalmSpec extends Specification {
                         href 'mixed/uri'
                     }
                     template {
-                        rel 'comlete'
+                        rel 'complete'
                         href 'complete/uri'
                         params 'param=complete'
                         hreflang Locale.JAPANESE
                         type 'image/*'
                         title 'complete title'
+                        deprecation 'deprecated/url'
+                        name '''link's name'''
+                        profile 'profile/uri'
                     }
                 }
             }
@@ -479,11 +530,14 @@ class HalmSpec extends Specification {
                                                 templated: true
                                         ],
                                         simpleComplete: [
-                                                href     : 'simple/complete?param=simple',
-                                                hreflang : 'ru_RU',
-                                                type     : 'text/plane',
-                                                title    : 'simple title',
-                                                templated: true
+                                                href       : 'simple/complete?param=simple',
+                                                hreflang   : 'ru_RU',
+                                                type       : 'text/plane',
+                                                title      : 'simple title',
+                                                templated  : true,
+                                                deprecation: 'deprecated/url',
+                                                name       : '''link's name''',
+                                                profile    : 'profile/uri'
                                         ],
                                         closure       : [
                                                 href     : 'closure/uri',
@@ -495,12 +549,15 @@ class HalmSpec extends Specification {
                                                 type     : 'application/hal+json',
                                                 templated: true
                                         ],
-                                        comlete       : [
-                                                href     : 'complete/uri?param=complete',
-                                                hreflang : 'ja',
-                                                type     : 'image/*',
-                                                title    : 'complete title',
-                                                templated: true
+                                        complete      : [
+                                                href       : 'complete/uri?param=complete',
+                                                hreflang   : 'ja',
+                                                type       : 'image/*',
+                                                title      : 'complete title',
+                                                templated  : true,
+                                                deprecation: 'deprecated/url',
+                                                name       : '''link's name''',
+                                                profile    : 'profile/uri'
                                         ]
                                 ]
                         ]
@@ -514,6 +571,9 @@ class HalmSpec extends Specification {
             assert result['_embedded']['emb']['_links'][rel]['templated'] == expect['_embedded']['emb']['_links'][rel]['templated']
             assert result['_embedded']['emb']['_links'][rel]['hreflang'] == expect['_embedded']['emb']['_links'][rel]['hreflang']
             assert result['_embedded']['emb']['_links'][rel]['title'] == expect['_embedded']['emb']['_links'][rel]['title']
+            assert result['_embedded']['emb']['_links'][rel]['deprecation'] == expect['_embedded']['emb']['_links'][rel]['deprecation']
+            assert result['_embedded']['emb']['_links'][rel]['name'] == expect['_embedded']['emb']['_links'][rel]['name']
+            assert result['_embedded']['emb']['_links'][rel]['profile'] == expect['_embedded']['emb']['_links'][rel]['profile']
             assert result['_embedded']['emb']['_links'][rel] == expect['_embedded']['emb']['_links'][rel]
         }
 

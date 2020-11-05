@@ -207,7 +207,7 @@ class Halm {
     /**
      * Defines the mapping from the extension to the MIME type
      */
-    static enum FORMAT {
+	 static enum FORMAT {
         HAL('hal', 'application/hal+json'),
         HALM('halm', 'application/hal+json'), // for backward compatibility
         JSON('json', 'application/json'),
@@ -298,8 +298,9 @@ class Halm {
      * @param type -- MIME type of the resource which this link points to
      * @param title -- user-readable label for the link
      */
-    Halm link(String rel, String href, String params = '', Locale lang = null, String type = null, String title = null) {
-        Link link = new Link(href, params, lang, type, false, title)
+    Halm link(String rel, String href, String params = '', Locale lang = null, String type = null, String title = null
+              , String deprecation = null, String name = null, String profile = null) {
+        Link link = new Link(href, params, lang, type, false, title, deprecation, name, profile)
         link.rel(rel)
         linkMap.put(rel, link)
         return this
@@ -315,8 +316,9 @@ class Halm {
      * @param type -- MIME type of the resource which this link points to
      * @param title -- user-readable label for the link
      */
-    Halm template(String rel, String href, String params = '', Locale lang = null, String type = null, String title = null) {
-        Link link = new Link(href, params, lang, type, true, title)
+    Halm template(String rel, String href, String params = '', Locale lang = null, String type = null, String title = null
+                  , String deprecation = null, String name = null, String profile = null) {
+        Link link = new Link(href, params, lang, type, true, title, deprecation, name, profile)
         link.rel(rel)
         linkMap.put(rel, link)
         return this
@@ -333,9 +335,10 @@ class Halm {
      * @param title -- user-readable label for the link
      * @param closure includes calls to set any other arguments
      */
-    Link link(String rel = null, String href = null, String params = '', Locale lang = null, String type = null, String title = null,
+    Link link(String rel = null, String href = null, String params = '', Locale lang = null, String type = null, String title = null
+              , String deprecation = null, String name = null, String profile = null,
               @DelegatesTo(Link) Closure closure) {
-        Link link = new Link(href, params, lang, type, false, title)
+        Link link = new Link(href, params, lang, type, false, title, deprecation, name, profile)
         link.rel(rel)
         delegate(link, closure)
         linkMap.put(link.rel, link)
@@ -353,9 +356,10 @@ class Halm {
      * @param title -- user-readable label for the link
      * @param closure includes calls to set any other arguments
      */
-    Link template(String rel = null, String href = null, String params = '', Locale lang = null, String type = null, String title = null,
+    Link template(String rel = null, String href = null, String params = '', Locale lang = null, String type = null, String title = null
+                  , String deprecation = null, String name = null, String profile = null,
                   @DelegatesTo(Link) Closure closure) {
-        Link template = new Link(href, params, lang, type, true, title)
+        Link template = new Link(href, params, lang, type, true, title, deprecation, name, profile)
         template.rel(rel)
         delegate(template, closure)
         linkMap.put(template.rel, template)
@@ -457,13 +461,20 @@ class Halm {
     class Link {
         Link(Boolean templated) { _templated = templated }
 
-        Link(String href, String params = '', Locale lang = null, String type = null, Boolean templated, String title = null) {
+        Link(String href, String params = ''
+             , Locale lang = null, String type = null
+             , Boolean templated
+             , String title = null, String deprecation = null
+             , String name = null, String profile = null) {
             this(templated)
             this.href(href)
             this.params(params)
             hreflang(lang)
             this.type(type)
             this.title(title)
+            this.deprecation(deprecation)
+            this.name(name)
+            this.profile(profile)
         }
 
         Boolean _templated
@@ -500,6 +511,18 @@ class Halm {
 
         void title(String title) { _title = title }
 
+        String _deprecation
+
+        void deprecation(String deprecation) { _deprecation = deprecation }
+
+        String _name
+
+        void name(String name) { _name = name }
+
+        String _profile
+
+        void profile(String profile) { _profile = profile }
+
         Map buildLink() {
             String paramStr = _params ? _params.matches(PARAM_PATTERN) ? _params : "?${_params}" : ''
 
@@ -528,6 +551,15 @@ class Halm {
             }
             if (_title) {
                 map.put('title', _title)
+            }
+            if (_deprecation) {
+                map.put('deprecation', _deprecation)
+            }
+            if (_name) {
+                map.put('name', _name)
+            }
+            if (_profile) {
+                map.put('profile', _profile)
             }
 
             return map

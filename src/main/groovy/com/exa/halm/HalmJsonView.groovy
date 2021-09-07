@@ -1,7 +1,9 @@
 package com.exa.halm
 
 import grails.artefact.Enhances
+import grails.core.GrailsApplication
 import grails.util.Environment
+import grails.util.Holders
 import grails.views.Views
 import grails.views.api.HttpView
 import groovy.transform.CompileDynamic
@@ -12,6 +14,8 @@ import groovy.transform.CompileDynamic
 @Enhances(Views.TYPE)
 @CompileDynamic
 trait HalmJsonView extends HttpView {
+    GrailsApplication grailsApplication
+
     /**
      * A prefix that comes with the servletPath, that should be moved from the relative url and added to the base url
      */
@@ -47,7 +51,8 @@ trait HalmJsonView extends HttpView {
      */
     Object hal(String href = null, String queryParams = null, Map values = null, @DelegatesTo(Halm) final Closure closure) {
         String servletPath = request.uri - request.contextPath
-        PREFIX prefix = PREFIX.values().find { PREFIX prefix -> servletPath == prefix.prefix || servletPath.startsWith("$prefix.prefix/") }
+        List<String> prefixes = Holders.config.apiPrefixes?.values() as ArrayList<String> ?: PREFIX.values()*.prefix
+        String prefix = prefixes.find { servletPath == it || servletPath.startsWith("$it/") }
 
         // +------------------------------------------------------------+
         // | there are 2 unofficial ways to get request URL. Choose one |
@@ -61,7 +66,7 @@ trait HalmJsonView extends HttpView {
 //        def hrefRoot = href ?: requestURL.substring(baseURL.length() + (href == null ? 0 : 1))
 
         String requestURL = jsonapi.viewHelper.getServerBaseURL()
-        String offset = prefix?.prefix ?: ''
+        String offset = prefix ?: ''
         String baseURL = requestURL + offset
         def hrefRoot = href ?: (servletPath - offset - (href == null ? '' : '/'))
 
